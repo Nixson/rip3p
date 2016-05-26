@@ -2,6 +2,9 @@
 #define PRWORKER_H
 
 #include <QObject>
+#include "typelist.h"
+#include "qcustomplot.h"
+
 
 class PRworker : public QObject
 {

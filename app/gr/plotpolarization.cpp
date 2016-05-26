@@ -89,42 +89,6 @@ void PlotPolarization::result(QCPColorMapData *data){
 }
 void PlotPolarization::plot(){
     emit plotSignal();
-    /*
-    int nx =PhMax - PhMin;
-    int ny =ArgMax - ArgMin;
-    colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
-    colorMap->data()->setRange(QCPRange(0-PhMax/2, PhMax/2), QCPRange(ArgMin, ArgMax)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
-    double x, y;
-    float Max = 0.0;
-    if(Phase.size() >= Size*BLOCKLANGTH){
-        for (int xIndex=0; xIndex<nx; ++xIndex)
-        {
-          for (int yIndex=0; yIndex<ny; ++yIndex)
-          {
-            colorMap->data()->cellToCoord(xIndex, yIndex, &x, &y);
-            int rY = (int)(x+180);
-            int rZ = (int)round(y);
-
-            float A = 0;
-            int P = 0;
-            int Step = 0;
-            for(P = Lay, Step = 0; Step <= leRasterPeriod && P < Size; ++Step, ++P){
-                if((int)Phase[P*BLOCKLANGTH+rZ] == rY){
-                    double AmpR = (double)Amp[P*BLOCKLANGTH+rZ];
-                    if(AmpR >= Barier)
-                        A+= (AmpR - Barier);
-                }
-            }
-            if(Max < A) Max = A;
-            colorMap->data()->setCell(xIndex, yIndex, A);
-          }
-        }
-    }
-
-    colorMap->setGradient(QCPColorGradient::gpThermal);
-    colorMap->rescaleDataRange();
-    customPlot->rescaleAxes();
-    customPlot->replot();*/
 }
 
 void PlotPolarization::on_rasterPeriod_valueChanged(int arg1)

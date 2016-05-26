@@ -3,7 +3,7 @@
 #include <QDockWidget>
 
 MControl::MControl(QObject *parent) : QObject(parent), debug(new DebugDialog),
-  isgr3dVmdi(false), isgr3dGmdi(false), isgrPlotVmdi(false), isgrPlotGmdi(false), isgrRPlotVmdi(false), isgrPlotGmdi(false)
+  isgr3dVmdi(false), isgr3dGmdi(false), isgrPlotVmdi(false), isgrPlotGmdi(false), isgrRPlotVmdi(false), isgrRPlotGmdi(false)
 {
     settings = new QSettings("rip3p.ini",QSettings::IniFormat);
     Memory::resultData["Gorizontal"].clear();
@@ -258,7 +258,7 @@ void MControl::showPlotRastr(QString sType){
                 Memory::getData("vVerticalAr",bufA.data(),size*sizeof(float));
                 Memory::getData("vVerticalPh",bufP.data(),size*sizeof(float));
                 grRPlotV->setBuf(bufA,bufP);
-                grPRlotV->plot();
+                grRPlotV->plot();
             }
         }
         grRPlotVmdi->show();

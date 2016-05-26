@@ -273,7 +273,7 @@ void MControl::showPlotRastr(QString sType){
             grRPlotGmdi = area->addSubWindow(grRPlotG);
             grRPlotGmdi->setWindowTitle("Горизонтальная поляризация");
             grRPlotGmdi->resize(400,400);
-            connect(grRPlotGmdi,SIGNAL(destroyed()),this,SLOT(isgrRPlotVmdiHide()));
+            connect(grRPlotGmdi,SIGNAL(destroyed()),this,SLOT(isgrRPlotGmdiHide()));
             if(hasGData){
                 Clowd bufA, bufP;
                 int size = Memory::get("Size",1024).toInt()*BLOCKLANGTH;
@@ -351,6 +351,12 @@ void MControl::isgr3dVmdiHide(){
 }
 void MControl::isgr3dGmdiHide(){
     isgr3dGmdi = false;
+}
+void MControl::isgrRPlotVmdiHide(){
+    isgrRPlotVmdi = false;
+}
+void MControl::isgrRPlotGmdiHide(){
+    isgrRPlotGmdi = false;
 }
 void MControl::winOpen(QString winName){
     if(winName=="plugin")

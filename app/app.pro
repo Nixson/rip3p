@@ -29,7 +29,9 @@ SOURCES += memory.cpp\
     gr/workers/scworker.cpp \
     gr/workers/ppworker.cpp \
     gr/plotraster.cpp \
-    gr/workers/prworker.cpp
+    gr/workers/prworker.cpp \
+    gr/plotmath.cpp \
+    gr/workers/pmworker.cpp
 
 HEADERS  += memory.h \
     gwindow.h \
@@ -51,7 +53,9 @@ HEADERS  += memory.h \
     gr/workers/scworker.h \
     gr/workers/ppworker.h \
     gr/plotraster.h \
-    gr/workers/prworker.h
+    gr/workers/prworker.h \
+    gr/plotmath.h \
+    gr/workers/pmworker.h
 
 FORMS    += gwindow.ui \
     gr/gr3d.ui \
@@ -60,7 +64,8 @@ FORMS    += gwindow.ui \
     nomain/debugdialog.ui \
     nomain/extparam.ui \
     gr/plotpolarization.ui \
-    gr/plotraster.ui
+    gr/plotraster.ui \
+    gr/plotmath.ui
 
 RESOURCES += \
     nomain/res.qrc
@@ -70,5 +75,6 @@ INSTALLS += target
 
 DESTDIR = ..
 
-QMAKE_CXXFLAGS += -pthread
-LIBS += -lpthread
+QMAKE_CXXFLAGS += -pthread -lmgl-qt -lmgl
+LIBS += -lpthread -lmgl-qt -lmgl
+

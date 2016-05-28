@@ -4,6 +4,7 @@
 
 MControl::MControl(QObject *parent) : QObject(parent), debug(new DebugDialog),
   isgr3dVmdi(false), isgr3dGmdi(false), isgrPlotVmdi(false), isgrPlotGmdi(false), isgrRPlotVmdi(false), isgrRPlotGmdi(false)
+, isgrMPlotVmdi(false), isgrMPlotGmdi(false)
 {
     settings = new QSettings("rip3p.ini",QSettings::IniFormat);
     Memory::resultData["Gorizontal"].clear();
@@ -133,6 +134,10 @@ void MControl::resultXX(Clowd &dataA,Clowd &dataH){
         grRPlotG->setBuf(dataA,dataH);
         grRPlotG->plot();
     }
+    if(isgrMPlotGmdi){
+        grMPlotG->setBuf(dataA,dataH);
+        grMPlotG->plot();
+    }
 }
 void MControl::resultYY(Clowd &dataA, Clowd &dataH){
     int sizeA = dataA.size()*sizeof(float);
@@ -154,6 +159,10 @@ void MControl::resultYY(Clowd &dataA, Clowd &dataH){
         grRPlotV->setBuf(dataA,dataH);
         grRPlotV->plot();
     }
+    if(isgrMPlotVmdi){
+        grMPlotV->setBuf(dataA,dataH);
+        grMPlotV->plot();
+    }
 }
 void MControl::shared(int shp){
     if(isgr3dVmdi){
@@ -169,6 +178,12 @@ void MControl::shared(int shp){
     }
     if(isgrPlotVmdi){
         grPlotV->shared(shp);
+    }
+    if(isgrMPlotGmdi){
+        grMPlotG->shared(shp);
+    }
+    if(isgrMPlotVmdi){
+        grMPlotV->shared(shp);
     }
     if(isgrRPlotGmdi){
         grRPlotG->shared(shp);
@@ -339,6 +354,64 @@ void MControl::showPlotPolarization(QString sType){
         }
         grPlotGmdi->show();
     }
+}
+void MControl::showMathPolarization(QString sType){
+    if(sType=="vertical"){
+        if(!isgrMPlotVmdi){
+            isgrMPlotVmdi = true;
+            grMPlotV = new PlotMath();
+            grMPlotV->setType("Vertical");
+            grMPlotV->syncSlot();
+            connect(grMPlotV,&PlotMath::sync,this,&MControl::saveConfig);
+            connect(this,&MControl::sync,grMPlotV,&PlotMath::syncSlot);
+            grMPlotVmdi = area->addSubWindow(grMPlotV);
+            grMPlotVmdi->setWindowTitle("Вертикальная поляризация");
+            grMPlotVmdi->resize(400,400);
+            connect(grMPlotVmdi,SIGNAL(destroyed()),this,SLOT(isgrMPlotVmdiHide()));
+            if(hasVData){
+                Clowd bufA, bufP;
+                int size = Memory::get("Size",1024).toInt()*BLOCKLANGTH;
+                bufA.resize(size);
+                bufP.resize(size);
+                Memory::getData("vVerticalAr",bufA.data(),size*sizeof(float));
+                Memory::getData("vVerticalPh",bufP.data(),size*sizeof(float));
+                grMPlotV->setBuf(bufA,bufP);
+                grMPlotV->plot();
+            }
+        }
+        grMPlotVmdi->show();
+    }
+    else {
+        if(!isgrMPlotGmdi){
+            isgrMPlotGmdi = true;
+            grMPlotG = new PlotMath();
+            grMPlotG->setType("Gorizontal");
+            grMPlotG->syncSlot();
+            connect(grMPlotG,&PlotMath::sync,this,&MControl::saveConfig);
+            connect(this,&MControl::sync,grMPlotG,&PlotMath::syncSlot);
+            grMPlotGmdi = area->addSubWindow(grMPlotG);
+            grMPlotGmdi->setWindowTitle("Горизонтальная поляризация");
+            grMPlotGmdi->resize(400,400);
+            connect(grMPlotGmdi,SIGNAL(destroyed()),this,SLOT(isgrMPlotGmdiHide()));
+            if(hasGData){
+                Clowd bufA, bufP;
+                int size = Memory::get("Size",1024).toInt()*BLOCKLANGTH;
+                bufA.resize(size);
+                bufP.resize(size);
+                Memory::getData("vGorizontalAr",bufA.data(),size*sizeof(float));
+                Memory::getData("vGorizontalPh",bufP.data(),size*sizeof(float));
+                grMPlotG->setBuf(bufA,bufP);
+                grMPlotG->plot();
+            }
+        }
+        grMPlotGmdi->show();
+    }
+}
+void MControl::isgrMPlotVmdiHide(){
+    isgrMPlotVmdi = false;
+}
+void MControl::isgrMPlotGmdiHide(){
+    isgrMPlotGmdi = false;
 }
 void MControl::isgrPlotVmdiHide(){
     isgrPlotVmdi = false;

@@ -282,3 +282,11 @@ void GWindow::on_mmAFRastr_triggered()
     else
         control->showPlotPolarization("gorizontal");
 }
+
+void GWindow::on_mm3Dmath_triggered()
+{
+    if(Memory::get("Vpolarization",true).toBool())
+        control->showMathPolarization("vertical");
+    else
+        control->showMathPolarization("gorizontal");
+}

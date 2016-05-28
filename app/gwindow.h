@@ -55,6 +55,8 @@ private slots:
 
     void on_mmAFRastr_triggered();
 
+    void on_mm3Dmath_triggered();
+
 signals:
     void setMemory(Rdata *mLink);
     void init();

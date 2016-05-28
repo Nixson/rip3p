@@ -25,9 +25,10 @@ private:
     Clowd m_data, histA, histY;
 
     GLfloat *m_dataLink;
+    GLfloat VertexArray[12][3];
 
     void plotFlower(int x,int y,int z, uint color);
-    void appendPointObj(int x,int y,int z, int color);
+    void appendPointObj(float x, float y, float z, int color);
 
 };
 

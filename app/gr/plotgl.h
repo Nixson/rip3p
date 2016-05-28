@@ -61,6 +61,7 @@ private:
     void initData();
     QPoint m_lastPos;
     ScObject *m_Sc;
+    GLint m_viewport;
     QOpenGLVertexArrayObject m_vao;
     QOpenGLVertexArrayObject m_vaoLast;
     QOpenGLBuffer m_ScVbo, m_ScVboLast;

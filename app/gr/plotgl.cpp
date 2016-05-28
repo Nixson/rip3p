@@ -128,11 +128,13 @@ static const char *vertexShaderSource =
     "uniform mat4 mvMatrix;\n"
     "uniform mat3 normalMatrix;\n"
     "varying highp vec4 vColor;\n"
+    "varying highp vec4 vPosition;\n"
     "void main() {\n"
     "   vert = vertex.xyz;\n"
     "   vertNormal = normalMatrix * vertex.xyz;\n"
-    "   gl_PointSize = 1.0;\n"
-    "   gl_Position = projMatrix * mvMatrix * vertex;\n"
+    "   gl_PointSize = 3.0;\n"
+    "   vPosition = projMatrix * mvMatrix * vertex;\n"
+    "   gl_Position = vPosition;\n"
     "   vColor = vec4(aVertexColor.x,aVertexColor.y,aVertexColor.z,0.0);\n"
     "}\n";
 
@@ -141,6 +143,7 @@ static const char *fragmentShaderSource =
     "varying highp vec3 vertNormal;\n"
     "uniform highp vec3 lightPos;\n"
     "varying highp vec4 vColor;\n"
+    "varying highp vec4 vPosition;\n"
     "void main() {\n"
     "   highp vec3 L = normalize(lightPos - vert);\n"
     "   highp float NL = max(dot(normalize(vertNormal), L), 0.0);\n"
@@ -148,7 +151,18 @@ static const char *fragmentShaderSource =
     "   gl_FragColor = col;\n"
     "}\n";
 
+QByteArray versionedShaderCode(const char *src)
+{
+    QByteArray versionedSrc;
 
+    /*if (QOpenGLContext::currentContext()->isOpenGLES())
+        versionedSrc.append(QByteArrayLiteral("#version 300 es compatibility\n"));
+    else
+        versionedSrc.append(QByteArrayLiteral("#version 330 compatibility\n"));*/
+
+    versionedSrc.append(src);
+    return versionedSrc;
+}
 void PlotGl::initializeGL()
 {
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &PlotGl::cleanup);
@@ -157,8 +171,8 @@ void PlotGl::initializeGL()
     glClearColor(0.1, 0.1, 0.1, 1);
 
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, versionedShaderCode(vertexShaderSource));
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, versionedShaderCode(fragmentShaderSource));
     m_program->bindAttributeLocation("vertex", 0);
     m_program->bindAttributeLocation("aVertexColor", 1);
     m_program->link();
@@ -241,10 +255,10 @@ void PlotGl::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_LESS);
-//    glEnable(GL_POINT_SMOOTH);
-//    glEnable(GL_MULTISAMPLE);
-    /*glEnable(GL_CULL_FACE);*/
+    /*glDepthFunc(GL_LESS);
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_CULL_FACE);*/
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_camera.setToIdentity();
@@ -261,7 +275,7 @@ void PlotGl::paintGL()
     m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-
+    //glPointSize(20.0);
     //glDrawArrays(GL_POINTS, 0, m_Sc->vertexCount());
     glDrawArrays(GL_TRIANGLES, 0, m_Sc->vertexCount());
     vaoBinder.release();

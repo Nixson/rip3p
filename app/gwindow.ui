@@ -74,6 +74,7 @@
     <addaction name="mmRastr"/>
     <addaction name="mmAFRastr"/>
     <addaction name="mm3Dmodel"/>
+    <addaction name="mm3Dmath"/>
    </widget>
    <widget class="QMenu" name="menuPlugins">
     <property name="title">
@@ -524,6 +525,11 @@
   <action name="mmAFRastr">
    <property name="text">
     <string>АФ Растр</string>
+   </property>
+  </action>
+  <action name="mm3Dmath">
+   <property name="text">
+    <string>3D Math</string>
    </property>
   </action>
  </widget>

@@ -87,11 +87,18 @@
     </property>
     <addaction name="mmDebug"/>
    </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>Режимы</string>
+    </property>
+    <addaction name="mmControlForm"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
    <addaction name="menuPlugins"/>
    <addaction name="menuDebug"/>
+   <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockVisual">
@@ -529,6 +536,11 @@
   <action name="mm3Dmath">
    <property name="text">
     <string>3D Math</string>
+   </property>
+  </action>
+  <action name="mmControlForm">
+   <property name="text">
+    <string>Непрерывный запрос</string>
    </property>
   </action>
  </widget>

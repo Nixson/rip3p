@@ -12,6 +12,7 @@
 #include "nomain/debugdialog.h"
 #include "nomain/rdata.h"
 #include "nomain/savefile.h"
+#include "nomain/controlform.h"
 #include "memory.h"
 
 
@@ -58,6 +59,8 @@ private slots:
 
     void on_mmSave_triggered();
 
+    void on_mmControlForm_triggered();
+
 signals:
     void setMemory(Rdata *mLink);
     void init();
@@ -73,6 +76,7 @@ private:
     QMap <QString, QAction *> plugActions;
     QMap <QString, PlugWidgetInterfaces *> plugObject;
     SaveFile *sf;
+    ControlForm *cf;
 };
 
 #endif // GWINDOW_H

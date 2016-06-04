@@ -109,6 +109,15 @@ GWindow::GWindow(QWidget *parent) :
     sf = new SaveFile();
     connect(sf,&SaveFile::sync,control,&MControl::saveConfig);
     sf->hide();
+    cf = new ControlForm;
+    connect(cf,&ControlForm::sync,control,&MControl::saveConfig);
+    connect(cf,&ControlForm::sendMsg,control,&MControl::sendMsg);
+    dw["cf"] = new QDockWidget("Запрос",this);
+    dw["cf"]->setFloating(true);
+    dw["cf"]->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    dw["cf"]->setWidget(cf);
+    this->setDockNestingEnabled(false);
+    dw["cf"]->hide();
 }
 
 GWindow::~GWindow()
@@ -308,4 +317,9 @@ void GWindow::on_mmAFRastr_triggered()
 void GWindow::on_mmSave_triggered()
 {
     sf->show();
+}
+
+void GWindow::on_mmControlForm_triggered()
+{
+    dw["cf"]->show();
 }

@@ -2,14 +2,18 @@
 #define WORKER_H
 
 #include <QObject>
-#include <QSharedMemory>
+#include <QThread>
 #include "typelist.h"
+#include "nomain/udpsock.h"
 
 class Worker : public QObject
 {
     Q_OBJECT
+    QThread udpThread;
+//    QThread tcpThread;
 public:
     explicit Worker(QObject *parent = 0);
+    ~Worker();
 
 signals:
     void save();
@@ -18,11 +22,15 @@ signals:
     void shared(int);
     void resultGorizontal(Clowd &dataArg,Clowd &dataPh);
     void resultVertical(Clowd &dataArg,Clowd &dataPh);
+    void SendCmdPacket(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 
 public slots:
     void loadSrc(QByteArray &data);
     void loadFinished(QByteArray &data);
+    void loadFinishedF(QByteArray &data);
     void sync();
+    void sendParam();
+    void sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 private:
     QByteArray data;
     MathVector dataDouble;
@@ -56,17 +64,15 @@ private:
     float *ResXXPhase, *ResYYPhase;
     float *ResXXReAvg, *ResXXImAvg;
     float *ResYYReAvg, *ResYYImAvg;
-    QSharedMemory memGarg, memGph, memVarg,  memVph;
     Clowd histGA,histGY,histVA,histVY;
     int lastProgress;
-
     float maxColor, colorStep;
-
     int Size;
-
     Clowd ResUlst, ResUlstY;
-
     int ArgMin, ArgMax;
+
+    UDPSock *udp;
+
 
 };
 

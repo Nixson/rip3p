@@ -36,9 +36,9 @@ signals:
     void cbLOGM(bool);
     void rbDdsRstBurst(bool);
     void rbDdsRstPulse(bool);
-
-
     void save();
+    void sendParam();
+    void sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 
 
 public slots:
@@ -67,6 +67,18 @@ public slots:
     void setrbTxPolYX(bool);
     void setrbTxPolYY(bool);
     void setleTxAtt(int);
+    void setrlsIP(QString);
+    void setrlsPort(int);
+    void setrbRxAnt0(bool);
+    void setrbRxAnt1(bool);
+    void setseMLEN(int arg1);
+    void setcbMGEN(bool checked);
+    void setleRxAtt(int);
+
+    void setrbRxPolXX(bool);
+    void setrbRxPolXY(bool);
+    void setrbRxPolYX(bool);
+    void setrbRxPolYY(bool);
 
 private slots:
     void on_leSubBufNum_valueChanged(int arg1);
@@ -95,8 +107,35 @@ private slots:
     void on_rbTxPolYY_toggled(bool checked);
     void on_leTxAtt_valueChanged(int arg1);
 
+    void on_BitBtn1_clicked();
+
+    void on_rlsIP_textEdited(const QString &arg1);
+
+    void on_rlsIP_textChanged(const QString &arg1);
+
+    void on_rbRxAnt0_toggled(bool checked);
+
+    void on_rbRxAnt1_toggled(bool checked);
+
+    void on_cbMGEN_toggled(bool checked);
+
+    void on_seMLEN_valueChanged(int arg1);
+
+    void on_rlsPort_valueChanged(int arg1);
+
+    void on_leRxAtt_valueChanged(int arg1);
+
+    void on_rbRxPolXX_toggled(bool checked);
+
+    void on_rbRxPolXY_toggled(bool checked);
+
+    void on_rbRxPolYX_toggled(bool checked);
+
+    void on_rbRxPolYY_toggled(bool checked);
+
 private:
     Ui::formSettings *ui;
+    int CurrentTxPacketNum;
 };
 
 #endif // FORMSETTINGS_H

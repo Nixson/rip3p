@@ -74,7 +74,6 @@
     <addaction name="mmRastr"/>
     <addaction name="mmAFRastr"/>
     <addaction name="mm3Dmodel"/>
-    <addaction name="mm3Dmath"/>
    </widget>
    <widget class="QMenu" name="menuPlugins">
     <property name="title">

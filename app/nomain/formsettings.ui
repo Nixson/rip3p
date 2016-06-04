@@ -359,6 +359,15 @@
       <height>22</height>
      </rect>
     </property>
+    <property name="decimals">
+     <number>4</number>
+    </property>
+    <property name="maximum">
+     <double>100.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>0.000100000000000</double>
+    </property>
    </widget>
    <widget class="QLabel" name="label_8">
     <property name="geometry">
@@ -393,7 +402,7 @@
      <x>230</x>
      <y>10</y>
      <width>241</width>
-     <height>101</height>
+     <height>130</height>
     </rect>
    </property>
    <property name="title">
@@ -477,14 +486,37 @@
      <string>И</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="cbMGEN">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>85</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>М</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="seMLEN">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>97</y>
+      <width>71</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_5">
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>120</y>
+     <y>146</y>
      <width>241</width>
-     <height>101</height>
+     <height>100</height>
     </rect>
    </property>
    <property name="title">
@@ -570,9 +602,9 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>230</y>
+     <y>251</y>
      <width>241</width>
-     <height>111</height>
+     <height>110</height>
     </rect>
    </property>
    <property name="title">
@@ -700,9 +732,9 @@
    <property name="geometry">
     <rect>
      <x>230</x>
-     <y>350</y>
+     <y>366</y>
      <width>241</width>
-     <height>101</height>
+     <height>100</height>
     </rect>
    </property>
    <property name="title">
@@ -741,15 +773,77 @@
   <widget class="QPushButton" name="BitBtn1">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>500</y>
-     <width>201</width>
+     <x>230</x>
+     <y>560</y>
+     <width>241</width>
      <height>41</height>
     </rect>
    </property>
    <property name="text">
     <string>Ок</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_8">
+   <property name="geometry">
+    <rect>
+     <x>229</x>
+     <y>471</y>
+     <width>241</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>РЛС</string>
+   </property>
+   <widget class="QLineEdit" name="rlsIP">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>46</y>
+      <width>140</width>
+      <height>23</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>23</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>IP адрес</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_14">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>23</y>
+      <width>61</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Порт</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="rlsPort">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>46</y>
+      <width>70</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>68000</number>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources>

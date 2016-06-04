@@ -4,17 +4,23 @@
 
 Worker::Worker(QObject *parent) : QObject(parent)
 {
+    udp = new UDPSock();
     OriginalPulseRe = new float[BLOCKLANGTH];
     OriginalPulseIm = new float[BLOCKLANGTH];
-    memGarg.setKey("ripgorizontalar");
-    memGph.setKey("ripgorizontalph");
-    memVarg.setKey("ripverticalar");
-    memVph.setKey("ripverticalph");
     isAttach = false;
     maxColor = 0.0;
     colorStep = 0.0;
+    udp->moveToThread(&udpThread);
+    connect(&udpThread, &QThread::finished, udp, &QObject::deleteLater);
+    connect(this,&Worker::SendCmdPacket,udp,&UDPSock::SendCmdPacket);
+    udpThread.start();
 }
-
+Worker::~Worker(){
+    udpThread.quit();
+    udpThread.wait();
+    /*tcpThread.quit();
+    tcpThread.wait();*/
+}
 void Worker::loadSrc(QByteArray &data){
     int step = BLOCKLANGTH*32; // определяем количество отсчетов
     int cntD = data.count();
@@ -45,6 +51,31 @@ void Worker::loadSrc(QByteArray &data){
     attach();
     run();
     emit log("Обработка завершена");
+}
+void Worker::loadFinishedF(QByteArray &data){
+    int binarySize = data.size()/8;
+    Size = binarySize/BLOCKLANGTH;
+    Memory::set("Size",Size);
+    emit save();
+    if(histGA.size()!=binarySize){
+        histGA.clear();
+        histVA.clear();
+        histGY.clear();
+        histVY.clear();
+        histGA.resize(binarySize);
+        histVA.resize(binarySize);
+        histGY.resize(binarySize);
+        histVY.resize(binarySize);
+    }
+    char *dataFile = data.data();
+    memcpy(histGA.data(),dataFile,data.size()/2);
+    memcpy(histVA.data(),dataFile,data.size()/2);
+    dataFile += data.size()/2;
+    memcpy(histGY.data(),dataFile,data.size()/2);
+    memcpy(histVY.data(),dataFile,data.size()/2);
+    data.clear();
+    emit resultGorizontal(histGA,histGY);
+    emit resultVertical(histVA,histVY);
 }
 void Worker::loadFinished(QByteArray &data){
     int binarySize = data.size()/8;
@@ -87,8 +118,8 @@ void Worker::loadFinished(QByteArray &data){
                 histVA[position] = bsA[positionR];
                 if(maxColor < bsA[positionR])
                     maxColor = bsA[positionR];
-                histGY[position] = bsP[positionR]*180/M_PI;
-                histVY[position] = bsP[positionR]*180/M_PI;
+                histGY[position] = 180+bsP[positionR]*180/M_PI;
+                histVY[position] = 180+bsP[positionR]*180/M_PI;
                 if(paxPh < bsP[positionR])
                     paxPh = bsP[positionR];
             }
@@ -101,11 +132,12 @@ void Worker::loadFinished(QByteArray &data){
     for( int step = 0; step < Size; ++step){
         for(int mk = 0; mk < BLOCKLANGTH; ++mk){
             int position = mk+step*BLOCKLANGTH;
-            float ps = round(histGA[position]*norm);
+            float ps = histGA[position]*norm;
             histGA[position] = ps;
             histVA[position] = ps;
         }
     }
+    maxColor = QUINT16_SIZE;
     emit resultGorizontal(histGA,histGY);
     emit resultVertical(histVA,histVY);
 }
@@ -114,25 +146,6 @@ void Worker::sync(){
     ArgMax = Memory::get("ArgMax",1024).toInt();
 }
 void Worker::attach(){
-    int blockSize = Size*BLOCKLANGTH*sizeof(float);
-    if(memGarg.attach()){
-        isAttach = true;
-    }
-    int sizeMem = memGarg.size();
-    if(sizeMem > 0 && blockSize > sizeMem){
-        memGarg.detach();
-        memGarg.create(blockSize);
-        memVarg.detach();
-        memVarg.create(blockSize);
-        memGph.detach();
-        memGph.create(blockSize);
-        memVph.detach();
-        memVph.create(blockSize);
-    }else {
-        memVarg.attach();
-        memGph.attach();
-        memVph.attach();
-    }
     if(histGA.size()!=Size*BLOCKLANGTH){
         histGA.clear();
         histGA.resize(Size*BLOCKLANGTH);
@@ -183,25 +196,10 @@ void Worker::compile(int startPos,int position,int iNum){
         emit progress(lastProgress);
             int range = numPos*sizeof(float);
             Memory::setData("vGorizontalAr",histGA.data(),range);
-            /*memGarg.lock();
-            memcpy(memGarg.data(),histGA.data(),range);
-            memGarg.unlock();*/
             Memory::setData("vGorizontalPh",histGY.data(),range);
-            /*
-            memGph.lock();
-            memcpy(memGph.data(),histGY.data(),range);
-            memGph.unlock();*/
 
             Memory::setData("vVerticalAr",histVA.data(),range);
-            /*memVarg.lock();
-            memcpy(memVarg.data(),histVA.data(),range);
-            memVarg.unlock();*/
             Memory::setData("vVerticalPh",histVY.data(),range);
-            /*
-            memVph.lock();
-            memcpy(memVph.data(),histVY.data(),range);
-            memVph.unlock();
-            */
             emit shared(iNum);
     }
 }
@@ -410,4 +408,102 @@ void Worker::Math1(unsigned int BufSize, float *DataBuf)
             else ResYYAng[i] = 0;
 
      }
+}
+void Worker::sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum){
+    emit SendCmdPacket(BufferSize,Buffer,CmdNum);
+}
+void Worker::sendParam(){
+    unsigned short BuffSize = 70;
+    double leFreq     = Memory::get("leFreq",0.0).toDouble(),
+           leAmp      = Memory::get("leAmp",0.0).toDouble(),
+           lePeriod   = Memory::get("lePeriod",0.0).toDouble(),
+           leDuration = Memory::get("leDuration",0.0).toDouble(),
+           leFreqRange= Memory::get("leFreqRange",0.0).toDouble(),
+           leGateDelay= Memory::get("leGateDelay",0.0).toDouble(),
+           leGateDuration = Memory::get("leGateDuration",0.0).toDouble();
+    int    leBurstLen = Memory::get("leBurstLen",1).toInt();
+
+
+    leAmp = leAmp > 0 ? ((leAmp/100)*0xFFF8)-1 : 0;
+    QByteArray bleFreq;
+    bleFreq.resize(BuffSize);
+    unsigned char *DataPtr = (unsigned char *)bleFreq.data();
+    memcpy(DataPtr,&leFreq,sizeof(double));
+    DataPtr += sizeof(double);//8
+    memcpy(DataPtr,&leAmp,sizeof(double));
+    DataPtr += sizeof(double);//16
+    memcpy(DataPtr,&lePeriod,sizeof(double));
+    DataPtr += sizeof(double);//24
+    memcpy(DataPtr,&leDuration,sizeof(double));
+    DataPtr += sizeof(double);//32
+    memcpy(DataPtr,&leBurstLen,sizeof(int));
+    DataPtr += sizeof(int);//36
+    memcpy(DataPtr,&leFreqRange,sizeof(double));
+    DataPtr += sizeof(double);//44
+    memcpy(DataPtr,&leGateDelay,sizeof(double));
+    DataPtr += sizeof(double);//52
+//    memcpy(DataPtr,&leGateDelay,sizeof(double));
+    memcpy(DataPtr,&leGateDuration,sizeof(double));
+    DataPtr += sizeof(double);//60
+    bool cbLOGM,rbDdsRstBurst,cbMGEN,cbDDSReset,cbCont,cbUWB,cbGate,cbLFM,cbPulseMod;
+    cbLOGM = Memory::get("cbLOGM",false).toBool();
+    rbDdsRstBurst = Memory::get("rbDdsRstBurst",false).toBool();
+    cbMGEN = Memory::get("cbMGEN",false).toBool();
+    cbDDSReset = Memory::get("cbDDSReset",false).toBool();
+    cbCont = Memory::get("cbCont",false).toBool();
+    cbUWB = Memory::get("cbUWB",false).toBool();
+    cbGate = Memory::get("cbGate",false).toBool();
+    cbLFM = Memory::get("cbLFM",false).toBool();
+    cbPulseMod = Memory::get("cbPulseMod",false).toBool();
+    *((int *)(DataPtr)) = (((cbLOGM)?2:((rbDdsRstBurst)?0:1))<<23)|
+            ((cbMGEN)<<9)|
+            ((cbDDSReset)<<6)|
+            ((cbCont)<<4)|
+            ((cbUWB)<<3)|
+            ((cbGate)<<2)|
+            ((cbLFM)<<1)|
+            ((cbPulseMod)<<0);
+    DataPtr += sizeof(int);//64
+    *((short *)(DataPtr)) = (short)Memory::get("leTxAtt",0).toInt()*2;
+    DataPtr += sizeof(short);//66
+    *((short *)(DataPtr)) = (short)Memory::get("leRxAtt",0).toInt()*2;
+    DataPtr += sizeof(short);//68
+
+    short TxPolDec =  (Memory::get("rbTxPolYY",false).toBool()<<3)|(Memory::get("rbTxPolYX",false).toBool()<<2)|
+                                        (Memory::get("rbTxPolXY",false).toBool()<<1)|(Memory::get("rbTxPolXX",false).toBool()<<0);
+    short RxPolDec =  (Memory::get("rbRxPolYY",false).toBool()<<3)|(Memory::get("rbRxPolYX",false).toBool()<<2)|
+                                        (Memory::get("rbRxPolXY",false).toBool()<<1)|(Memory::get("rbRxPolXX",false).toBool()<<0);
+    short RxAntDec =  (Memory::get("rbRxAnt1",false).toBool()<<1) |(Memory::get("rbRxAnt0",false).toBool()<<0);
+
+    short TxPol, RxPol, RxAnt;
+
+    switch(TxPolDec)
+    {
+           case 0x1:{TxPol = 0;} break;
+           case 0x2:{TxPol = 1;} break;
+           case 0x4:{TxPol = 2;} break;
+           case 0x8:{TxPol = 3;} break;
+    }
+
+    switch(RxPolDec)
+    {
+           case 0x1:{RxPol = 0;} break;
+           case 0x2:{RxPol = 1;} break;
+           case 0x4:{RxPol = 2;} break;
+           case 0x8:{RxPol = 3;} break;
+    }
+
+    switch(RxAntDec)
+    {
+           case 0x1:{RxAnt = 0;} break;
+           case 0x2:{RxAnt = 1;} break;
+    }
+
+    *((short *)(DataPtr)) = (RxAnt<<4)|(RxPol<<2)|(TxPol<<0);
+    DataPtr += sizeof(short);//70
+
+    *((short *)(DataPtr)) = (short)Memory::get("seMLEN",0).toInt();
+    DataPtr += sizeof(short);//72
+    emit SendCmdPacket(BuffSize, (unsigned char *)bleFreq.data(), 0x0001);
+    //delete [] Buffer;
 }

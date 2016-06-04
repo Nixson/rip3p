@@ -45,6 +45,8 @@ GWindow::GWindow(QWidget *parent) :
 
     fs = new formSettings;
     connect(fs,&formSettings::save,control,&MControl::saveConfig);
+    connect(fs,&formSettings::sendParam,control,&MControl::sendParam);
+    connect(fs,&formSettings::sendMsg,control,&MControl::sendMsg);
     fs->setleSubBufNum(Memory::get("leSubBufNum",4).toInt());
     fs->setleFreq(Memory::get("leFreq",1777).toInt());
     fs->setleBurstLen(Memory::get("leBurstLen",1).toInt());
@@ -71,7 +73,23 @@ GWindow::GWindow(QWidget *parent) :
     fs->setrbTxPolXY(Memory::get("rbTxPolXY",false).toBool());
     fs->setrbTxPolYX(Memory::get("rbTxPolYX",false).toBool());
     fs->setrbTxPolYY(Memory::get("rbTxPolYY",false).toBool());
+    fs->setrbRxPolXX(Memory::get("rbRxPolXX",false).toBool());
+    fs->setrbRxPolXY(Memory::get("rbRxPolXY",false).toBool());
+    fs->setrbRxPolYX(Memory::get("rbRxPolYX",false).toBool());
+    fs->setrbRxPolYY(Memory::get("rbRxPolYY",false).toBool());
+
     fs->setleTxAtt(Memory::get("leTxAtt",1).toInt());
+    fs->setrlsIP(Memory::get("rlsIP","192.168.114.100").toString());
+    fs->setrlsPort(Memory::get("rlsPort",30583).toInt());
+
+    fs->setcbMGEN(Memory::get("cbMGEN",false).toBool());
+    fs->setseMLEN(Memory::get("seMLEN",3).toInt());
+    fs->setleRxAtt(Memory::get("leRxAtt",1).toInt());
+    fs->setrbRxAnt0(Memory::get("rbRxAnt0",false).toBool());
+    fs->setrbRxAnt1(Memory::get("rbRxAnt1",false).toBool());
+
+
+
     dw["fs"] = new QDockWidget("Настройка сканирования",this);
     dw["fs"]->setFloating(true);
     dw["fs"]->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -88,6 +106,9 @@ GWindow::GWindow(QWidget *parent) :
     ui->ArgMax->setValue(Memory::get("ArgMax",1024).toInt());
     ui->ArgMin->setValue(Memory::get("ArgMin",0).toInt());
     this->showMaximized();
+    sf = new SaveFile();
+    connect(sf,&SaveFile::sync,control,&MControl::saveConfig);
+    sf->hide();
 }
 
 GWindow::~GWindow()
@@ -214,7 +235,7 @@ void GWindow::on_mmSignal_triggered()
 void GWindow::on_mmLoad_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Файл 3d объекта"), Memory::get("lastFileDir","").toString(),
-            tr("Бинарные файлы (*.dat);;Бинарные файлы (*.3d);;Все файлы (*.*)"));
+            tr("Бинарные файлы (*.dat);;Бинарные файлы (*.3d);;Бинарные файлы (*.3df);;Все файлы (*.*)"));
     if (fileName != "") {
             control->log("Загрузка файла");
             QFile file(fileName);
@@ -283,10 +304,8 @@ void GWindow::on_mmAFRastr_triggered()
         control->showPlotPolarization("gorizontal");
 }
 
-void GWindow::on_mm3Dmath_triggered()
+
+void GWindow::on_mmSave_triggered()
 {
-    if(Memory::get("Vpolarization",true).toBool())
-        control->showMathPolarization("vertical");
-    else
-        control->showMathPolarization("gorizontal");
+    sf->show();
 }

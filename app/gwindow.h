@@ -11,6 +11,7 @@
 #include "nomain/formsettings.h"
 #include "nomain/debugdialog.h"
 #include "nomain/rdata.h"
+#include "nomain/savefile.h"
 #include "memory.h"
 
 
@@ -55,11 +56,12 @@ private slots:
 
     void on_mmAFRastr_triggered();
 
-    void on_mm3Dmath_triggered();
+    void on_mmSave_triggered();
 
 signals:
     void setMemory(Rdata *mLink);
     void init();
+    void sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 private:
     Ui::GWindow *ui;
     MControl *control;
@@ -70,6 +72,7 @@ private:
     QMap <QString, Plugs > plugins;
     QMap <QString, QAction *> plugActions;
     QMap <QString, PlugWidgetInterfaces *> plugObject;
+    SaveFile *sf;
 };
 
 #endif // GWINDOW_H

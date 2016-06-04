@@ -30,8 +30,7 @@ SOURCES += memory.cpp\
     gr/workers/ppworker.cpp \
     gr/plotraster.cpp \
     gr/workers/prworker.cpp \
-    gr/plotmath.cpp \
-    gr/workers/pmworker.cpp
+    nomain/savefile.cpp
 
 HEADERS  += memory.h \
     gwindow.h \
@@ -54,8 +53,7 @@ HEADERS  += memory.h \
     gr/workers/ppworker.h \
     gr/plotraster.h \
     gr/workers/prworker.h \
-    gr/plotmath.h \
-    gr/workers/pmworker.h
+    nomain/savefile.h
 
 FORMS    += gwindow.ui \
     gr/gr3d.ui \
@@ -65,7 +63,8 @@ FORMS    += gwindow.ui \
     nomain/extparam.ui \
     gr/plotpolarization.ui \
     gr/plotraster.ui \
-    gr/plotmath.ui
+    gr/plotmath.ui \
+    nomain/savefile.ui
 
 RESOURCES += \
     nomain/res.qrc

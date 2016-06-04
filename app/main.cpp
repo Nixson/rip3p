@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
     qRegisterMetaType<IntVector>("IntVector&");
     qRegisterMetaType<QByteArray>("QByteArray&");
     qRegisterMetaType<Clowd>("Clowd&");
-    qRegisterMetaType<mglGraph *>("mglGraph *");
 
 
 

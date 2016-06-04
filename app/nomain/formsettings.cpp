@@ -1,6 +1,7 @@
 #include "formsettings.h"
 #include "ui_formsettings.h"
 #include "memory.h"
+#include <QDesktopWidget>
 
 formSettings::formSettings(QWidget *parent) :
     QDialog(parent),
@@ -8,6 +9,12 @@ formSettings::formSettings(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
+    QDesktopWidget *desktop = QApplication::desktop();
+    int screenWidth = desktop->width();
+    int screenHeight = desktop->height();
+    int width = this->geometry().width();
+    int height = this->geometry().height();
+    this->move((screenWidth-width)/2,(screenHeight-height)/2);
 }
 
 formSettings::~formSettings()
@@ -262,4 +269,117 @@ void formSettings::on_leTxAtt_valueChanged(int arg1)
 {
     Memory::set("leTxAtt",arg1);
     emit save();
+}
+
+void formSettings::on_BitBtn1_clicked()
+{
+    emit sendParam();
+    QByteArray ba;
+    ba.resize(sizeof(int));
+    unsigned int leSubBufNum = (unsigned int)Memory::get("leSubBufNum",1).toInt();
+    memcpy(ba.data(),&leSubBufNum,sizeof(int));
+    emit sendMsg(4, (unsigned char *)ba.data(), 0x0002);
+
+}
+
+void formSettings::setrlsIP(QString val){
+    ui->rlsIP->setText(val);
+}
+void formSettings::on_rlsIP_textEdited(const QString &arg1)
+{
+    Memory::set("rlsIP",arg1);
+    emit save();
+}
+
+void formSettings::on_rlsIP_textChanged(const QString &arg1)
+{
+    Memory::set("rlsIP",arg1);
+    emit save();
+}
+void formSettings::setrbRxAnt0(bool checked){
+    ui->rbRxAnt0->setChecked(checked);
+}
+void formSettings::setrbRxAnt1(bool checked){
+    ui->rbRxAnt1->setChecked(checked);
+}
+void formSettings::on_rbRxAnt0_toggled(bool checked)
+{
+    Memory::set("rbRxAnt0",checked);
+    emit save();
+}
+
+void formSettings::on_rbRxAnt1_toggled(bool checked)
+{
+    Memory::set("rbRxAnt1",checked);
+    emit save();
+}
+void formSettings::setcbMGEN(bool checked){
+    ui->cbMGEN->setChecked(checked);
+}
+void formSettings::on_cbMGEN_toggled(bool checked)
+{
+    Memory::set("cbMGEN",checked);
+    emit save();
+}
+void formSettings::setseMLEN(int arg1){
+    ui->seMLEN->setValue(arg1);
+}
+
+void formSettings::on_seMLEN_valueChanged(int arg1)
+{
+    Memory::set("seMLEN",arg1);
+    emit save();
+}
+void formSettings::setrlsPort(int port){
+    ui->rlsPort->setValue(port);
+}
+void formSettings::on_rlsPort_valueChanged(int arg1)
+{
+    Memory::set("rlsPort",arg1);
+    emit save();
+}
+
+void formSettings::on_leRxAtt_valueChanged(int arg1)
+{
+    Memory::set("leRxAtt",arg1);
+    emit save();
+}
+void formSettings::setleRxAtt(int val){
+    ui->leRxAtt->setValue(val);
+}
+
+void formSettings::on_rbRxPolXX_toggled(bool checked)
+{
+    Memory::set("rbRxPolXX",checked);
+    emit save();
+}
+
+void formSettings::on_rbRxPolXY_toggled(bool checked)
+{
+    Memory::set("rbRxPolXY",checked);
+    emit save();
+}
+
+void formSettings::on_rbRxPolYX_toggled(bool checked)
+{
+    Memory::set("rbRxPolYX",checked);
+    emit save();
+}
+
+void formSettings::on_rbRxPolYY_toggled(bool checked)
+{
+    Memory::set("rbRxPolYY",checked);
+    emit save();
+}
+void formSettings::setrbRxPolXX(bool checked){
+    ui->rbRxPolXX->setChecked(checked);
+}
+void formSettings::setrbRxPolXY(bool checked){
+    ui->rbRxPolXY->setChecked(checked);
+}
+void formSettings::setrbRxPolYX(bool checked){
+    ui->rbRxPolYX->setChecked(checked);
+}
+void formSettings::setrbRxPolYY(bool checked){
+    ui->rbRxPolYY->setChecked(checked);
 }

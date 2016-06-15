@@ -10,7 +10,7 @@ PlotRaster::PlotRaster(QWidget *parent) :
     customPlot = ui->plot;
     customPlot->setInteractions(QCP::iRangeZoom); //QCP::iRangeDrag| this will also allow rescaling the color scale by dragging/zooming
     customPlot->axisRect()->setupFullAxesBox(true);
-    customPlot->xAxis->setLabel("Градусы");
+    customPlot->xAxis->setLabel("Отсчеты");
     customPlot->yAxis->setLabel("Отсчеты");
     colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
     customPlot->addPlottable(colorMap);
@@ -95,10 +95,14 @@ void PlotRaster::plot(){
 
 void PlotRaster::on_rbAmp_toggled(bool checked)
 {
-    Memory::set("rbAmp",checked);
+    Memory::set("rbAmp"+Type,checked);
+    emit syncSignal(Type);
+    emit plotSignal();
 }
 
 void PlotRaster::on_rbPh_toggled(bool checked)
 {
-    Memory::set("rbPh",checked);
+    Memory::set("rbPh"+Type,checked);
+    emit syncSignal(Type);
+    emit plotSignal();
 }

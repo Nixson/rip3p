@@ -33,6 +33,7 @@ PlotPolarization::PlotPolarization(QWidget *parent) :
 void PlotPolarization::sharedNow(){
     if(isShared){
         isShared = false;
+        sharedTimer->stop();
     }
     else return;
     emit sharedSignal(sharedShip,Type);

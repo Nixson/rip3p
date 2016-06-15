@@ -10,8 +10,8 @@ class Rdata
 public:
     explicit Rdata();
     ~Rdata();
-    void set(QString name, void *from, int length, int start = 0);
-    void get(QString name,void *to, int length, int start = 0);
+    void set(QString name, void *from, int length, unsigned int start = 0);
+    void get(QString name,void *to, int length, unsigned int start = 0);
     void setVariant(QString name,QVariant val);
     QVariant getVariant(QString name,QVariant defval);
     QMap<QString, QVariant> list;

@@ -278,7 +278,9 @@ void formSettings::on_BitBtn1_clicked()
     ba.resize(sizeof(int));
     unsigned int leSubBufNum = (unsigned int)Memory::get("leSubBufNum",1).toInt();
     memcpy(ba.data(),&leSubBufNum,sizeof(int));
-    emit sendMsg(4, (unsigned char *)ba.data(), 0x0002);
+    QTimer::singleShot(1000,[=](){
+        emit sendMsg(4, (unsigned char *)ba.data(), 0x0002);
+    });
 
 }
 

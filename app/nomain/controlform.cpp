@@ -1,6 +1,9 @@
 #include "controlform.h"
 #include "ui_controlform.h"
 #include "memory.h"
+#include <iostream>
+
+using namespace std;
 
 ControlForm::ControlForm(QWidget *parent) :
     QWidget(parent),
@@ -52,6 +55,9 @@ void ControlForm::on_bContView32Avg_clicked()
     int leSubBufNum = Memory::get("leSubBufNum",0).toInt()*sizeof(int);
     int leNumberOfMultOsc = Memory::get("leNumberOfMultOsc",0).toInt();
     int leMulOscDelay = Memory::get("leMulOscDelay",0).toInt();
+    cout << "leSubBufNum: " << leSubBufNum << endl;
+    cout << "leNumberOfMultOsc: " << leNumberOfMultOsc << endl;
+    cout << "leMulOscDelay: " << leMulOscDelay << endl;
 
     memcpy(DataPtr,&leSubBufNum,sizeof(int));
     DataPtr += sizeof(int);
@@ -62,6 +68,7 @@ void ControlForm::on_bContView32Avg_clicked()
     memcpy(DataPtr,&leMulOscDelay,sizeof(int));
     DataPtr += sizeof(int);
     emit sendMsg(BuffSize, Buffer, 0x0007);
-    delete [] Buffer;
+    cout << "Buffer:" << Buffer << endl;
+//    delete [] Buffer;
 
 }

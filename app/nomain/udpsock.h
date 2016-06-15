@@ -20,9 +20,12 @@ public slots:
     void sendMsg(QByteArray info, QString address, quint16 port);
     void SendCmdPacket(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 private:
-    QUdpSocket* p_udpSocket;
+    QUdpSocket *p_udpSocket, *p_udpSocketSrv;
     int PacketNum;
+    QMap <int, int> packet;
     QString fname;
+    int position;
+    int cnt;
 };
 
 #endif // UDPSOCK_H

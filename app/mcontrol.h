@@ -14,6 +14,7 @@
 #include "gr/gr3d.h"
 #include "gr/plotpolarization.h"
 #include "gr/plotraster.h"
+#include "gr/plotosc.h"
 
 #include "plugwin.h"
 #include "worker.h"
@@ -30,16 +31,18 @@ public:
     void showGr3D(QString sType);
     void showPlotPolarization(QString sType);
     void showPlotRastr(QString sType);
+    void showPlotOsc(QString sType);
     void setDock(QMap<QString,QDockWidget *> &dock);
     void init();
     void load();
     DebugDialog* debug;
     PlugWin* plugin;
-    QMdiSubWindow *gr3dVmdi, *gr3dGmdi, *grPlotVmdi, *grPlotGmdi, *grRPlotVmdi, *grRPlotGmdi;
-    bool isgr3dVmdi, isgr3dGmdi, isgrPlotVmdi, isgrPlotGmdi, isgrRPlotVmdi, isgrRPlotGmdi;
+    QMdiSubWindow *gr3dVmdi, *gr3dGmdi, *grPlotVmdi, *grPlotGmdi, *grRPlotVmdi, *grRPlotGmdi, *grOPlotVmdi, *grOPlotGmdi;
+    bool isgr3dVmdi, isgr3dGmdi, isgrPlotVmdi, isgrPlotGmdi, isgrRPlotVmdi, isgrRPlotGmdi, isgrOPlotVmdi, isgrOPlotGmdi;
     Gr3D *gr3dV, *gr3dG;
     PlotPolarization *grPlotV, *grPlotG;
     PlotRaster *grRPlotV, *grRPlotG;
+    PlotOsc *grOPlotV, *grOPlotG;
     void setMDI(QMdiArea *lnk);
     QMdiArea *area;
     ScObject *scV, *scG;
@@ -63,6 +66,8 @@ public slots:
     void isgrPlotGmdiHide();
     void isgrRPlotVmdiHide();
     void isgrRPlotGmdiHide();
+    void isgrOPlotVmdiHide();
+    void isgrOPlotGmdiHide();
     void saveConfig();
     void saveConfigTimer();
     void log(QString);

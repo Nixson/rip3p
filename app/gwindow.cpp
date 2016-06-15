@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QTabWidget>
 #include "nomain/extparam.h"
 
 
@@ -97,8 +98,10 @@ GWindow::GWindow(QWidget *parent) :
     dw["fs"]->setWidget(fs);
     this->setDockNestingEnabled(false);
     dw["fs"]->hide();
-    setTabPosition(Qt::RightDockWidgetArea,QTabWidget::TabPosition::East);
-    setTabPosition(Qt::LeftDockWidgetArea,QTabWidget::TabPosition::West);
+    this->setTabPosition(Qt::RightDockWidgetArea,QTabWidget::East);
+    this->setTabPosition(Qt::LeftDockWidgetArea,QTabWidget::West);
+   // setTabPosition(Qt::RightDockWidgetArea,QTabWidget::TabPosition::East);
+    //setTabPosition(Qt::LeftDockWidgetArea,QTabWidget::TabPosition::West);
 
 
     ui->Barier->setValue(Memory::get("Barier",0).toInt());
@@ -322,4 +325,12 @@ void GWindow::on_mmSave_triggered()
 void GWindow::on_mmControlForm_triggered()
 {
     dw["cf"]->show();
+}
+
+void GWindow::on_mmOsc_triggered()
+{
+    if(Memory::get("Vpolarization",true).toBool())
+        control->showPlotOsc("vertical");
+    else
+        control->showPlotOsc("gorizontal");
 }

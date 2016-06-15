@@ -21,9 +21,12 @@ QVariant Memory::get(QString name, QVariant def){
     return def;
     */
 }
-void Memory::setData(QString name, void *from, int length, int start){
+void Memory::clearData(){
+//    Memory::dLink->clear();
+}
+void Memory::setData(QString name, void *from, int length, unsigned int start){
     Memory::dLink->set(name, from, length, start);
 }
-void Memory::getData(QString name, void *to, int length, int start){
+void Memory::getData(QString name, void *to, int length, unsigned int start){
     Memory::dLink->get(name, to, length, start);
 }

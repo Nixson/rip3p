@@ -12,6 +12,7 @@ Rdata::Rdata()
     qm["vGorizontalPh"] = new QMutex();
     qm["vVerticalAr"] = new QMutex();
     qm["vVerticalPh"] = new QMutex();
+    qm["srcData"] = new QMutex();
     qb.insert("dGorizontalAr",QByteArray());
     qb.insert("dGorizontalPh",QByteArray());
     qb.insert("dVerticalAr",QByteArray());
@@ -20,6 +21,7 @@ Rdata::Rdata()
     qb.insert("vGorizontalPh",QByteArray());
     qb.insert("vVerticalAr",QByteArray());
     qb.insert("vVerticalPh",QByteArray());
+    qb.insert("srcData",QByteArray());
     qm["Var"] = new QMutex();
 }
 Rdata::~Rdata(){
@@ -45,7 +47,7 @@ void Rdata::setVariant(QString name, QVariant val){
     list[name] = val;
     qm["Var"]->unlock();
 }
-void Rdata::set(QString name, void *from, int length, int start){
+void Rdata::set(QString name, void *from, int length, unsigned int start){
     char *r;
     char *lsk = (char *)from;
     r = lsk+start;
@@ -57,14 +59,19 @@ void Rdata::set(QString name, void *from, int length, int start){
     memcpy(qb[name].data(),r,length);
     qm[name]->unlock();
 }
-void Rdata::get(QString name, void *to, int length, int start){
+void Rdata::get(QString name, void *to, int length, unsigned int start){
     void *r;
     char *s = (char *)to;
     qm[name]->lock();
+    if(qb[name].length()==0){
+        qm[name]->unlock();
+        return;
+    }
     r = qb[name].data()+start;
     int position = length;
     int subP = 0;
-    if(qb[name].length() < length+start){
+    unsigned int lengthQb = qb[name].length();
+    if(lengthQb < (unsigned int)length+start){
         position = qb[name].length() - start;
         subP = length-position;
     }

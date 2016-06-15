@@ -5,11 +5,14 @@
 #define _USE_MATH_DEFINES
 #define BLOCKRANGE 4096
 #define BLOCKLANGTH 1024
+#if !defined(MAXBYTE)
 #define MAXBYTE 256
+#endif
 #define MAXBYTEFLOAT 256.0f
 #define RAD 57.295779513082320877
 #define MaxSpeed 50
 #define QUINT16_SIZE 65535
+
 
 #include <qopengl.h>
 #include <QVector>

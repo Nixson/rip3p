@@ -25,6 +25,7 @@ private:
     uint MaxBarier;
     Clowd m_data, histA, histY;
     QCPColorMap *colorMap;
+    bool rbAmp, rbPh;
 };
 
 #endif // PRWORKER_H

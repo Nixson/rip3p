@@ -21,6 +21,8 @@ void PRworker::syncSlot(QString type){
     MaxBarier = Memory::get("Barier",100).toInt();
     leRasterPeriod = Memory::get("leRasterPeriod"+type,10).toInt();
     Lay = Memory::get("PlotPLay"+type,0).toInt();
+    rbAmp = Memory::get("rbAmp"+type,false).toBool();
+    rbPh = Memory::get("rbPh"+type,false).toBool();
 }
 void PRworker::sharedSlot(int ship, QString type){
     if(histA.size()==0){
@@ -49,9 +51,14 @@ void PRworker::plotSlot(){
     if(histA.size()==0){
         return;
     }
-    int nx =AngleMax - AngleMin;
+    int sz = histA.size();
+    if(rbAmp)
+        sz = histA.size();
+    else if(rbPh)
+        sz = histY.size();
+    int nx =Size;
     int ny =OffsetMax - OffsetMin;
-    QCPColorMapData *data = new QCPColorMapData(nx,ny,QCPRange(AngleMin, AngleMax), QCPRange(OffsetMin, OffsetMax));
+    QCPColorMapData *data = new QCPColorMapData(nx,ny,QCPRange(0, Size), QCPRange(OffsetMin, OffsetMax));
     double x, y;
     float Max = 0.0;
     if(histY.size() >= Size*BLOCKLANGTH){
@@ -60,18 +67,15 @@ void PRworker::plotSlot(){
           for (int yIndex=0; yIndex<ny; ++yIndex)
           {
             data->cellToCoord(xIndex, yIndex, &x, &y);
-            int rY = (int)(x+180);
-            int rZ = (int)round(y);
-
-            float A = 0;
-            int P = 0;
-            int Step = 0;
-            for(P = Lay, Step = 0; Step <= leRasterPeriod && P < Size; ++Step, ++P){
-                if((int)histY[P*BLOCKLANGTH+rZ] == rY){
-                    double AmpR = (double)histA[P*BLOCKLANGTH+rZ];
-                    if(AmpR >= MaxBarier)
-                        A+= (AmpR - MaxBarier);
-                }
+            int r = (int)x * BLOCKLANGTH+(int)y;
+            float A = 0.0;
+            if(rbAmp){
+                if(r <= sz)
+                    A = (double)histA[r];
+            }
+            else if(rbPh){
+                if(r <= sz)
+                    A = (double)histY[r];
             }
             if(Max < A) Max = A;
             data->setCell(xIndex, yIndex, A);

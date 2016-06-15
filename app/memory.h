@@ -18,8 +18,9 @@ public:
     static QMap<QString,Clowd> resultData;
     static QMap<QString,fdata_t*> dataLink;
     static Rdata *dLink;
-    static void setData(QString name, void *from, int length, int start = 0);
-    static void getData(QString name, void *to, int length, int start = 0);
+    static void clearData();
+    static void setData(QString name, void *from, int length, unsigned int start = 0);
+    static void getData(QString name, void *to, int length, unsigned int start = 0);
 };
 
 

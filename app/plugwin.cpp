@@ -102,7 +102,7 @@ void PlugWin::tableAppend(Plugs &p){
         pCheckBox->setChecked(p.enable);
 //        connect(pCheckBox,&QCheckBox::toggled,this,&PlugWin::checked);
         //PlugWin *tw = this;
-        connect(pCheckBox,&QCheckBox::toggled,[item0,this](bool checked){this->checkedItem(item0,checked);});
+        connect(pCheckBox,&QCheckBox::toggled,[=](bool checked){this->checkedItem(item0,checked);});
         pLayout->addWidget(pCheckBox);
         pLayout->setAlignment(Qt::AlignCenter);
         pLayout->setContentsMargins(0,0,0,0);

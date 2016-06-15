@@ -61,6 +61,8 @@ private slots:
 
     void on_mmControlForm_triggered();
 
+    void on_mmOsc_triggered();
+
 signals:
     void setMemory(Rdata *mLink);
     void init();

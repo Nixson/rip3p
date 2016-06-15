@@ -31,7 +31,8 @@ SOURCES += memory.cpp\
     gr/plotraster.cpp \
     gr/workers/prworker.cpp \
     nomain/savefile.cpp \
-    nomain/controlform.cpp
+    nomain/controlform.cpp \
+    gr/plotosc.cpp
 
 HEADERS  += memory.h \
     gwindow.h \
@@ -55,7 +56,8 @@ HEADERS  += memory.h \
     gr/plotraster.h \
     gr/workers/prworker.h \
     nomain/savefile.h \
-    nomain/controlform.h
+    nomain/controlform.h \
+    gr/plotosc.h
 
 FORMS    += gwindow.ui \
     gr/gr3d.ui \
@@ -67,7 +69,8 @@ FORMS    += gwindow.ui \
     gr/plotraster.ui \
     gr/plotmath.ui \
     nomain/savefile.ui \
-    nomain/controlform.ui
+    nomain/controlform.ui \
+    gr/plotosc.ui
 
 RESOURCES += \
     nomain/res.qrc
@@ -77,6 +80,5 @@ INSTALLS += target
 
 DESTDIR = ..
 
-QMAKE_CXXFLAGS += -pthread -lmgl-qt -lmgl
-LIBS += -lpthread -lmgl-qt -lmgl
-
+QMAKE_CXXFLAGS += -std=c++11
+#LIBS += -lmgl-qt -lmgl

@@ -1,6 +1,9 @@
 #include "worker.h"
 #include "memory.h"
-
+#include "math.h"
+#if !defined(M_PI)
+#define M_PI		3.14159265358979323846
+#endif
 
 Worker::Worker(QObject *parent) : QObject(parent)
 {
@@ -22,6 +25,7 @@ Worker::~Worker(){
     tcpThread.wait();*/
 }
 void Worker::loadSrc(QByteArray &data){
+    Memory::clearData();
     int step = BLOCKLANGTH*32; // определяем количество отсчетов
     int cntD = data.count();
     initPulse(Memory::get("leSubBufNum",0).toInt(),Memory::get("leFreq",0.0).toDouble());
@@ -475,7 +479,7 @@ void Worker::sendParam(){
                                         (Memory::get("rbRxPolXY",false).toBool()<<1)|(Memory::get("rbRxPolXX",false).toBool()<<0);
     short RxAntDec =  (Memory::get("rbRxAnt1",false).toBool()<<1) |(Memory::get("rbRxAnt0",false).toBool()<<0);
 
-    short TxPol, RxPol, RxAnt;
+    short TxPol = 0, RxPol = 0, RxAnt = 0;
 
     switch(TxPolDec)
     {

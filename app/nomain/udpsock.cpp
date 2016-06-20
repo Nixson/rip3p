@@ -7,88 +7,103 @@
 #include <iostream>
 using namespace std;
 
-UDPSock::UDPSock(QObject *parent) : QObject(parent)
-{
-    p_udpSocket = new QUdpSocket(this);
-    p_udpSocketSrv = new QUdpSocket(this);
-    PacketNum = 0;
-    QObject::connect(p_udpSocketSrv, SIGNAL(readyRead()), SLOT(readMsg()));
-    p_udpSocketSrv->bind(QHostAddress::AnyIPv4,Memory::get("rlsPort",30583).toInt());
+static const int PCAP_TIMEOUT = 10000;
+
+
+UDPSock::UDPSock(QObject *parent) : QObject(parent){}
+UDPSock::~UDPSock(){}
+void UDPSock::run(){
     fname = "";
     position = 0;
+    updateInterface();
 }
-UDPSock::~UDPSock(){
-    p_udpSocket->deleteLater();
-    p_udpSocketSrv->deleteLater();
+bool UDPSock::openConnection( const QString &dev, int snaplen, bool promisc )
+{
+    handle = pcap_open_live( dev.toLocal8Bit().constData(),
+                                snaplen,
+                                (int)promisc,
+                                1000,
+                                errbuf );
+    return isValid();
 }
-void UDPSock::sendMsg(QString info,QString address, quint16 port){
-    QByteArray Datagram;
-    QDataStream out(&Datagram, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_5_4);
-        out << info;
-        p_udpSocket->writeDatagram(info.toLatin1(), QHostAddress(address), port);
+bool UDPSock::isValid(){
+    //cout << "isValid: " << handle << endl;
+    return (0 != handle);
+}
 
+bool UDPSock::setFilter( const QString &filterexp )
+{
+    int status = pcap_compile(handle, &filter, filterexp.toLocal8Bit().constData(), 0, 0);
+    if (status != 0)
+        return false;
+    cout << "pcap_compile: " << filterexp.toStdString() << ": " << status << endl;
+
+    status = pcap_setfilter(handle, &filter);
+    cout << "pcap_setfilter: " << status << endl;
+    if (status != 0)
+        return false;
+    return true;
 }
-void UDPSock::sendMsg(QByteArray info,QString address, quint16 port){
-    QDateTime current = QDateTime::currentDateTime();
-    uint tSafe = current.toTime_t();
-    /*QByteArray Datagram;
-    QDataStream out(&Datagram, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_5_6);
-        out << info;*/
-    for(auto dl = info.begin(); dl!=info.end();++dl){
-        unsigned int bData = (unsigned char)*dl;
-        cout << bData << " " << std::ends;
-    }
-    cout << "" << endl;
-    p_udpSocket->writeDatagram(info, QHostAddress(address), port);
-    fname = QString::number(PacketNum)+"."+QString::number(tSafe)+".src";
+bool UDPSock::close()
+{
+    if (!isValid())
+        return false;
+    pcap_close(handle);
+    handle = 0;
+    return true;
 }
-void UDPSock::SendCmdPacket(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum){
-    ++PacketNum;
-    unsigned char *TxBuffer = new unsigned char[10];
-    unsigned char *DataPtrB = TxBuffer;
-    *(unsigned int   *)(DataPtrB) = 0xABCDDCBA;
-    DataPtrB += sizeof(unsigned int);
-     *(unsigned short *)(DataPtrB) = CmdNum;
-    DataPtrB += sizeof(unsigned short);
-    *(unsigned int   *)(DataPtrB) = PacketNum;
-    QByteArray ab;
-    ab.resize(10+BufferSize);
-    unsigned char *DataPtr = (unsigned char *)ab.data();
-    memcpy(DataPtr,TxBuffer,10);
-    DataPtr+=10;
-    memcpy(DataPtr,Buffer,BufferSize);
-    QString address = Memory::get("rlsIP","127.0.0.1").toString();
-    cout << "send: "<< address.toStdString() << endl;
-    sendMsg(ab,address,Memory::get("rlsPort",30583).toInt());
-    packet.insert(PacketNum,CmdNum);
-    position = 0;
-    cnt = 0;
-}
-void UDPSock::readMsg(){
-    //QFile fl(fname);
-    //fl.open(QIODevice::Append);
-    QByteArray Datagram;
-        do {
-            ++cnt;
-            int size = p_udpSocketSrv->pendingDatagramSize();
-            Datagram.resize(size);
-            p_udpSocketSrv->readDatagram(Datagram.data(),size);
-            //Memory::setData("srcData",Datagram.data(),size,position);
-            //fl.write(Datagram);
-            position+=size;
-            cout << "dg: " << Datagram.size() << endl;
-            int endIn = 0;
-            for(auto dl = Datagram.begin(); dl!=Datagram.end();++dl){
-                if(endIn < 30){
-                    unsigned int bData = (unsigned char)*dl;
-                    cout << bData << " " << std::ends;
-                     ++endIn;
-                }
+
+void UDPSock::listen(){
+    pcap_pkthdr *pktheader;
+    const u_char *pktdata;
+    int res = 0;
+    if(isValid()){
+            while(isValid()){
+                    res = pcap_next_ex(handle, &pktheader, &pktdata);
+                    if(res == 1){
+                        cout << pktheader->len << endl;
+                        packReady(pktdata,pktheader->len);
+                    }
             }
-            cout << "" << endl;
-        } while(p_udpSocketSrv->hasPendingDatagrams());
-    //fl.close();
-    cout << "count: " << cnt << endl;
+    }
+    else {
+        cout << "stop" << endl;
+    }
 }
+void UDPSock::call(uchar *self, const pcap_pkthdr *header, const uchar *packet){
+    Q_UNUSED(self);
+    Q_UNUSED(packet);
+    //UDPSock *usock = (UDPSock *)self;
+    cout << header->len << endl;
+    //usock->packReady(packet);
+}
+
+
+void UDPSock::updateInterface(){
+    if(isValid()){
+        close();
+        cout << "close" << endl;
+        QTimer::singleShot(1500,[=](){
+            this->updateInterface();
+        });
+        return;
+    }
+    QString dev = Memory::get("device","").toString();
+    int rlsPort = Memory::get("rlsPort",30583).toInt();
+    QString rlsHost = Memory::get("rlsIP","127.0.0.1").toString();
+    QString filter ="ip src host "+rlsHost+" and udp dst port "+QString::number(rlsPort);
+    if(dev.size() > 0){
+        cout << filter.toStdString() << endl;
+        if(openConnection( dev, 65535, true )){
+            setFilter( filter );
+//            setFilter( QString("udp") );
+            listen();
+        }
+        cout << isValid() << endl;
+    }
+}
+void UDPSock::packReady(const uchar *packet, int len){
+    QByteArray ba((const char *)packet,len);
+    cout << ba.toStdString() << endl;
+}
+

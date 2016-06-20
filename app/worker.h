@@ -2,15 +2,15 @@
 #define WORKER_H
 
 #include <QObject>
-#include <QThread>
+#include <QThreadPool>
 #include "typelist.h"
 #include "nomain/udpsock.h"
+#include <QUdpSocket>
+
 
 class Worker : public QObject
 {
     Q_OBJECT
-    QThread udpThread;
-//    QThread tcpThread;
 public:
     explicit Worker(QObject *parent = 0);
     ~Worker();
@@ -22,7 +22,7 @@ signals:
     void shared(int);
     void resultGorizontal(Clowd &dataArg,Clowd &dataPh);
     void resultVertical(Clowd &dataArg,Clowd &dataPh);
-    void SendCmdPacket(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
+    void updateInterface();
 
 public slots:
     void loadSrc(QByteArray &data);
@@ -30,7 +30,7 @@ public slots:
     void loadFinishedF(QByteArray &data);
     void sync();
     void sendParam();
-    void sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
+    void sendMsgSlot(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 private:
     QByteArray data;
     MathVector dataDouble;
@@ -72,7 +72,14 @@ private:
     int ArgMin, ArgMax;
 
     UDPSock *udp;
+    QThreadPool *tp;
 
+    QUdpSocket *p_udpSocket;
+    int PacketNum;
+    QMap <int, int> packet;
+    void sendMsg(QString info, QString address, quint16 port);
+    void sendMsg(QByteArray info, QString address, quint16 port);
+    void SendCmdPacket(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum);
 
 };
 

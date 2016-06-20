@@ -6,7 +6,7 @@
 #include <QTimer>
 #include <QTabWidget>
 #include "nomain/extparam.h"
-
+#include "pcap.h"
 
 GWindow::GWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -14,6 +14,42 @@ GWindow::GWindow(QWidget *parent) :
     control(new MControl)
 {
     ui->setupUi(this);
+    QStringList devices;
+    pcap_if_t *devlist;
+    pcap_if_t *dev;
+    char errbuf[PCAP_ERRBUF_SIZE];
+    if(pcap_findalldevs(&devlist,errbuf) != -1){
+        for(dev=devlist;dev;dev=dev->next)
+            devices << QString::fromLocal8Bit(dev->name);
+    }
+
+    QList<QAction *> naList;
+    bool checkedAction = false;
+    QActionGroup *naGroup = new QActionGroup(this);
+    foreach(QString dev, devices){
+        QAction *na = new QAction(dev);
+        na->setCheckable(true);
+        if(Memory::get("device","").toString()==dev){
+            checkedAction = true;
+            na->setChecked(true);
+        }
+        else
+            na->setChecked(false);
+        connect(na,&QAction::triggered,[=](bool type){
+            Q_UNUSED(type);
+            control->setDev(dev);
+        });
+        naList.append(na);
+        naGroup->addAction(na);
+    }
+    ui->devInterface->addActions(naList);
+    if(!checkedAction && naList.size() > 0){
+        naList[0]->setChecked(true);
+    }
+
+
+
+
     pb = new QProgressBar();
     pb->setMaximum(100);
     pb->setMinimum(0);

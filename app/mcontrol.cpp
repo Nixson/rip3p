@@ -76,7 +76,7 @@ MControl::MControl(QObject *parent) : QObject(parent), debug(new DebugDialog),
     connect(this,&MControl::loadFinishedF,worker,&Worker::loadFinishedF);
     connect(this,&MControl::sync,worker,&Worker::sync);
     connect(this,&MControl::sendParamSignals,worker,&Worker::sendParam);
-    connect(this,&MControl::sendMsgSignal,worker,&Worker::sendMsg);
+    connect(this,&MControl::sendMsgSignal,worker,&Worker::sendMsgSlot);
     connect(worker,&Worker::save,this,&MControl::saveConfig);
 
     connect(worker,&Worker::log,this,&MControl::log);
@@ -98,6 +98,10 @@ MControl::~MControl(){
 }
 void MControl::sendParam(){
     emit sendParamSignals();
+}
+void MControl::setDev(QString dev){
+    Memory::set("device",dev);
+    saveConfigTimer();
 }
 void MControl::sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum){
     emit sendMsgSignal(BufferSize,Buffer,CmdNum);

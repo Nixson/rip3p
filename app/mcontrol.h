@@ -35,6 +35,7 @@ public:
     void setDock(QMap<QString,QDockWidget *> &dock);
     void init();
     void load();
+    void setDev(QString);
     DebugDialog* debug;
     PlugWin* plugin;
     QMdiSubWindow *gr3dVmdi, *gr3dGmdi, *grPlotVmdi, *grPlotGmdi, *grRPlotVmdi, *grRPlotGmdi, *grOPlotVmdi, *grOPlotGmdi;

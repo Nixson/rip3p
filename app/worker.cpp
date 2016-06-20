@@ -1,26 +1,39 @@
 #include "worker.h"
 #include "memory.h"
-#include "math.h"
+#include <QDataStream>
+#include <QDateTime>
+#include <QFile>
+#include <iostream>
+using namespace std;
+
+
 #if !defined(M_PI)
 #define M_PI		3.14159265358979323846
 #endif
 
 Worker::Worker(QObject *parent) : QObject(parent)
 {
+    p_udpSocket = new QUdpSocket();
+    PacketNum = 0;
     udp = new UDPSock();
+    udp->setAutoDelete(false);
+//    connect(this,&Worker::SendCmdPacket,udp,&UDPSock::SendCmdPacket);
+    connect(this,&Worker::updateInterface,udp,&UDPSock::updateInterface);
     OriginalPulseRe = new float[BLOCKLANGTH];
     OriginalPulseIm = new float[BLOCKLANGTH];
     isAttach = false;
     maxColor = 0.0;
     colorStep = 0.0;
-    udp->moveToThread(&udpThread);
-    connect(&udpThread, &QThread::finished, udp, &QObject::deleteLater);
-    connect(this,&Worker::SendCmdPacket,udp,&UDPSock::SendCmdPacket);
-    udpThread.start();
+    tp = QThreadPool::globalInstance();
+    tp->reserveThread();
+    tp->start(udp);
+
+//    connect(&udpThread, &QThread::finished, udp, &QObject::deleteLater);
+//    udpThread.start();
 }
 Worker::~Worker(){
-    udpThread.quit();
-    udpThread.wait();
+    tp->releaseThread();
+    p_udpSocket->deleteLater();
     /*tcpThread.quit();
     tcpThread.wait();*/
 }
@@ -148,6 +161,7 @@ void Worker::loadFinished(QByteArray &data){
 void Worker::sync(){
     ArgMin = Memory::get("ArgMin",0).toInt();
     ArgMax = Memory::get("ArgMax",1024).toInt();
+    emit updateInterface();
 }
 void Worker::attach(){
     if(histGA.size()!=Size*BLOCKLANGTH){
@@ -413,8 +427,8 @@ void Worker::Math1(unsigned int BufSize, float *DataBuf)
 
      }
 }
-void Worker::sendMsg(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum){
-    emit SendCmdPacket(BufferSize,Buffer,CmdNum);
+void Worker::sendMsgSlot(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum){
+    SendCmdPacket(BufferSize,Buffer,CmdNum);
 }
 void Worker::sendParam(){
     unsigned short BuffSize = 70;
@@ -508,6 +522,41 @@ void Worker::sendParam(){
 
     *((short *)(DataPtr)) = (short)Memory::get("seMLEN",0).toInt();
     DataPtr += sizeof(short);//72
-    emit SendCmdPacket(BuffSize, (unsigned char *)bleFreq.data(), 0x0001);
+    SendCmdPacket(BuffSize, (unsigned char *)bleFreq.data(), 0x0001);
     //delete [] Buffer;
+}
+void Worker::sendMsg(QString info,QString address, quint16 port){
+    QByteArray Datagram;
+    QDataStream out(&Datagram, QIODevice::WriteOnly);
+        out.setVersion(QDataStream::Qt_5_4);
+        out << info;
+        p_udpSocket->writeDatagram(info.toLatin1(), QHostAddress(address), port);
+}
+void Worker::sendMsg(QByteArray info,QString address, quint16 port){
+    for(auto dl = info.begin(); dl!=info.end();++dl){
+        unsigned int bData = (unsigned char)*dl;
+        cout << bData << " " << std::ends;
+    }
+    cout << "" << endl;
+    p_udpSocket->writeDatagram(info, QHostAddress(address), port);
+}
+void Worker::SendCmdPacket(unsigned short BufferSize, unsigned char *Buffer, unsigned short CmdNum){
+    ++PacketNum;
+    unsigned char *TxBuffer = new unsigned char[10];
+    unsigned char *DataPtrB = TxBuffer;
+    *(unsigned int   *)(DataPtrB) = 0xABCDDCBA;
+    DataPtrB += sizeof(unsigned int);
+     *(unsigned short *)(DataPtrB) = CmdNum;
+    DataPtrB += sizeof(unsigned short);
+    *(unsigned int   *)(DataPtrB) = PacketNum;
+    QByteArray ab;
+    ab.resize(10+BufferSize);
+    unsigned char *DataPtr = (unsigned char *)ab.data();
+    memcpy(DataPtr,TxBuffer,10);
+    DataPtr+=10;
+    memcpy(DataPtr,Buffer,BufferSize);
+    QString address = Memory::get("rlsIP","127.0.0.1").toString();
+    cout << "send: "<< address.toStdString() << endl;
+    sendMsg(ab,address,Memory::get("rlsPort",30583).toInt());
+    packet.insert(PacketNum,CmdNum);
 }

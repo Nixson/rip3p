@@ -81,4 +81,7 @@ INSTALLS += target
 DESTDIR = ..
 
 QMAKE_CXXFLAGS += -std=c++11
-#LIBS += -lmgl-qt -lmgl
+#LIBS    += -Wl,-rpath,../qpcap -L../qpcap -lqpcap
+#INCLUDEPATH += ../qpcap
+#QMAKE_RPATHDIR += ../qpcap
+LIBS += -lpcap

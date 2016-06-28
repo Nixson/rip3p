@@ -19,23 +19,91 @@ Worker::Worker(QObject *parent) : QObject(parent)
     udp->setAutoDelete(false);
 //    connect(this,&Worker::SendCmdPacket,udp,&UDPSock::SendCmdPacket);
     connect(this,&Worker::updateInterface,udp,&UDPSock::updateInterface);
+    connect(this,&Worker::close,udp,&UDPSock::close);
+    connect(udp,&UDPSock::Process,this,&Worker::Process);
     OriginalPulseRe = new float[BLOCKLANGTH];
     OriginalPulseIm = new float[BLOCKLANGTH];
     isAttach = false;
     maxColor = 0.0;
     colorStep = 0.0;
     tp = QThreadPool::globalInstance();
-    tp->reserveThread();
+    //tp->reserveThread();
     tp->start(udp);
 
 //    connect(&udpThread, &QThread::finished, udp, &QObject::deleteLater);
 //    udpThread.start();
 }
 Worker::~Worker(){
-    tp->releaseThread();
+    emit close();
+    udp->close();
+    tp->waitForDone();
     p_udpSocket->deleteLater();
+
     /*tcpThread.quit();
     tcpThread.wait();*/
+}
+void Worker::Process(QByteArray &data){
+    unsigned char *DataPtr = (unsigned char *)data.data() + 10;
+    unsigned int CurBufNum = *((unsigned int *) DataPtr);
+    DataPtr += sizeof(int);
+    unsigned int CurVarNum = *((unsigned int *) DataPtr);
+    DataPtr += sizeof(int);
+    switch(CurVarNum) // фильтр нужных импульсов
+    {
+           case 0 : CurVarNum = 0; break;
+           case 16: CurVarNum = 1; break;
+           case 15: CurVarNum = 2; break;
+           case 31: CurVarNum = 3; break;
+           default: CurVarNum = 33; break;
+    }
+    if(CurVarNum > 31)
+        return;
+    unsigned int CurSubBufNum = *((unsigned int *) DataPtr);
+    DataPtr += sizeof(int);
+    unsigned int BufSize = leSubBufNum*1024*sizeof(int);
+    unsigned int leSub = leSubBufNum*4*sizeof(int);
+    unsigned int VarBufSize = BufSize*4;
+    Q_UNUSED(VarBufSize);
+    memcpy(&PlotBuf[CurVarNum*BufSize+1024*CurSubBufNum], DataPtr, 1024);
+    //cout << "Process: " << (CurVarNum*BufSize+1024*CurSubBufNum) << " : " << CurSubBufNum << " : " << CurBufNum << " : " << CurVarNum << " : " << leSub << endl;
+    if((CurSubBufNum+1)*(CurVarNum+1) == leSub){
+        QByteArray DataBufArray;
+        DataBufArray.resize(BufSize*sizeof(float));
+        float *DataBuf = (float *)DataBufArray.data();
+        //cout << "Process: work" << endl;
+        for(unsigned int i=0; i<BufSize; i++)
+            DataBuf[i] = (*(unsigned int *)(PlotBuf+i*sizeof(int)) / leBurstLen) - 128.0;
+        Math1(BufSize, DataBuf);
+        float index = 0;
+        for(int i=0; i<BLOCKLANGTH; i++)
+        {
+               ResUlst[stepCurBufNum] = ResXXAbs[i];
+               ResUlstY[stepCurBufNum] = ResYYAbs[i];
+               if (maxColor < ResXXAbs[i])
+                   maxColor = ResXXAbs[i];
+               if (maxColor < ResYYAbs[i])
+                   maxColor = ResYYAbs[i];
+               ++stepCurBufNum;
+               // !!! значения аргумента в диапазоне от -180 до 180
+               index = round(ResXXAng[i]+180); // округление аргумента для определения индекса ячейки
+               // приведение фазы к диапазону от 0 до 360
+               while(index >= 360) index -= 360;
+               while(index < 0) index += 360;
+               // накопление значений
+               ResUlst[stepCurBufNum] = index;
+               // !!! значения аргумента в диапазоне от -180 до 180
+               index = round(ResYYAng[i]+180); // округление аргумента для определения индекса ячейки
+               // приведение фазы к диапазону от 0 до 360
+               while(index >= 360) index -= 360;
+               while(index < 0) index += 360;
+               // накопление значений
+               ResUlstY[stepCurBufNum] = index;
+               ++stepCurBufNum;
+        }
+        compile(lastStepCurBufNum,stepCurBufNum,CurBufNum);
+        lastStepCurBufNum = stepCurBufNum;
+    }
+//    memcpy(&PlotBuf[CurVarNum*BufSize+1024*CurSubBufNum], DataPtr, 1024);
 }
 void Worker::loadSrc(QByteArray &data){
     Memory::clearData();
@@ -161,6 +229,27 @@ void Worker::loadFinished(QByteArray &data){
 void Worker::sync(){
     ArgMin = Memory::get("ArgMin",0).toInt();
     ArgMax = Memory::get("ArgMax",1024).toInt();
+    Size = Memory::get("Size",400).toInt();
+    leSubBufNum = Memory::get("leSubBufNum",0).toInt();
+    leFreq = Memory::get("leFreq",0.0).toDouble();
+    leNumberOfMultOsc = Memory::get("leNumberOfMultOsc",0).toInt();
+    leBurstLen = Memory::get("leBurstLen",1).toInt();
+    initPulse(leSubBufNum,leFreq);
+    int sizeResp = Size*BLOCKLANGTH*2;
+    ResUlst = Memory::resultData["Gorizontal"];
+    ResUlstY = Memory::resultData["Vertical"];
+    if(ResUlst.size() != sizeResp){
+        ResUlst.clear();
+        ResUlst.resize(sizeResp);
+    }
+    if(ResUlstY.size() != sizeResp){
+        ResUlstY.clear();
+        ResUlstY.resize(sizeResp);
+    }
+    stepCurBufNum = 0;
+    lastStepCurBufNum = 0;
+    attach();
+    Buffer();
     emit updateInterface();
 }
 void Worker::attach(){

@@ -1,6 +1,7 @@
 #include "mcontrol.h"
 #include "memory.h"
 #include <QDockWidget>
+#include <iostream>
 
 MControl::MControl(QObject *parent) : QObject(parent), debug(new DebugDialog),
   isgr3dVmdi(false), isgr3dGmdi(false), isgrPlotVmdi(false), isgrPlotGmdi(false), isgrRPlotVmdi(false), isgrRPlotGmdi(false)
@@ -159,6 +160,9 @@ void MControl::resultXX(Clowd &dataA,Clowd &dataH){
     if(isgrOPlotGmdi){
         grOPlotG->shared(Memory::get("Size",1).toInt());
     }
+    if(isgr3bPlotGmdi){
+        gr3bPlotG->shared(Memory::get("Size",1).toInt());
+    }
 }
 void MControl::resultYY(Clowd &dataA, Clowd &dataH){
     int sizeA = dataA.size()*sizeof(float);
@@ -182,6 +186,9 @@ void MControl::resultYY(Clowd &dataA, Clowd &dataH){
     }
     if(isgrOPlotVmdi){
         grOPlotV->shared(Memory::get("Size",1).toInt());
+    }
+    if(isgr3bPlotVmdi){
+        gr3bPlotV->shared(Memory::get("Size",1).toInt());
     }
 }
 void MControl::shared(int shp){
@@ -210,6 +217,12 @@ void MControl::shared(int shp){
     }
     if(isgrOPlotVmdi){
         grOPlotV->shared(shp);
+    }
+    if(isgr3bPlotGmdi){
+        gr3bPlotG->shared(shp);
+    }
+    if(isgr3bPlotVmdi){
+        gr3bPlotV->shared(shp);
     }
 }
 void MControl::loadData(QString fileName, QByteArray &data){
@@ -368,6 +381,51 @@ void MControl::showPlotOsc(QString sType){
         grOPlotGmdi->show();
     }
 }
+
+
+void MControl::showPlot3dBar(QString sType){
+    if(sType=="vertical"){
+        if(!isgr3bPlotVmdi){
+            isgr3bPlotVmdi = true;
+            gr3bPlotV = new PlotOsc();
+            gr3bPlotV->setType("Vertical");
+            gr3bPlotV->syncSlot();
+            connect(gr3bPlotV,&PlotOsc::sync,this,&MControl::saveConfig);
+            connect(this,&MControl::sync,gr3bPlotV,&PlotOsc::syncSlot);
+            gr3bPlotVmdi = area->addSubWindow(gr3bPlotV);
+            gr3bPlotVmdi->setWindowTitle("Вертикальная осцилограмма");
+            gr3bPlotVmdi->resize(400,400);
+            connect(gr3bPlotVmdi,SIGNAL(destroyed()),this,SLOT(isgr3bPlotVmdiHide()));
+            if(hasVData){
+                int size = Memory::get("Size",1024).toInt();
+                gr3bPlotV->shared(size);
+                gr3bPlotV->plot();
+            }
+        }
+        gr3bPlotVmdi->show();
+    }else {
+        if(!isgr3bPlotGmdi){
+            isgr3bPlotGmdi = true;
+            gr3bPlotG = new PlotOsc();
+            gr3bPlotG->setType("Gorizontal");
+            gr3bPlotG->syncSlot();
+            connect(gr3bPlotG,&PlotOsc::sync,this,&MControl::saveConfig);
+            connect(this,&MControl::sync,gr3bPlotG,&PlotOsc::syncSlot);
+            gr3bPlotGmdi = area->addSubWindow(gr3bPlotG);
+            gr3bPlotGmdi->setWindowTitle("Горизонтальная осцилограмма");
+            gr3bPlotGmdi->resize(400,400);
+            connect(gr3bPlotGmdi,SIGNAL(destroyed()),this,SLOT(isgr3bPlotGmdiHide()));
+            if(hasGData){
+                int size = Memory::get("Size",1024).toInt();
+                gr3bPlotG->shared(size);
+                gr3bPlotG->plot();
+            }
+        }
+        gr3bPlotGmdi->show();
+    }
+}
+
+
 void MControl::showPlotPolarization(QString sType){
     if(sType=="vertical"){
         if(!isgrPlotVmdi){
@@ -444,6 +502,12 @@ void MControl::isgrOPlotVmdiHide(){
 }
 void MControl::isgrOPlotGmdiHide(){
     isgrOPlotGmdi = false;
+}
+void MControl::isgr3bPlotVmdiHide(){
+    isgr3bPlotVmdi = false;
+}
+void MControl::isgr3bPlotGmdiHide(){
+    isgr3bPlotGmdi = false;
 }
 void MControl::winOpen(QString winName){
     if(winName=="plugin")

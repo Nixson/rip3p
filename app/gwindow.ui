@@ -74,6 +74,7 @@
     <addaction name="mmRastr"/>
     <addaction name="mmAFRastr"/>
     <addaction name="mm3Dmodel"/>
+    <addaction name="mm3dBar"/>
    </widget>
    <widget class="QMenu" name="menuPlugins">
     <property name="title">
@@ -547,6 +548,11 @@
   <action name="mmControlForm">
    <property name="text">
     <string>Непрерывный запрос</string>
+   </property>
+  </action>
+  <action name="mm3dBar">
+   <property name="text">
+    <string>3D Bar</string>
    </property>
   </action>
  </widget>

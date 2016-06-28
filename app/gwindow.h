@@ -63,6 +63,8 @@ private slots:
 
     void on_mmOsc_triggered();
 
+    void on_mm3dBar_triggered();
+
 signals:
     void setMemory(Rdata *mLink);
     void init();

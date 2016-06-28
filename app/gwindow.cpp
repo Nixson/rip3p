@@ -1,3 +1,4 @@
+#include <iostream>
 #include "gwindow.h"
 #include "ui_gwindow.h"
 #include <QFileDialog>
@@ -162,6 +163,7 @@ GWindow::GWindow(QWidget *parent) :
 GWindow::~GWindow()
 {
     delete ui;
+    delete control;
 }
 void GWindow::loadPlugin(Plugs &plugin){
     if(plugins.contains(plugin.alias)){
@@ -369,4 +371,12 @@ void GWindow::on_mmOsc_triggered()
         control->showPlotOsc("vertical");
     else
         control->showPlotOsc("gorizontal");
+}
+
+void GWindow::on_mm3dBar_triggered()
+{
+    if(Memory::get("Vpolarization",true).toBool())
+        control->showPlot3dBar("vertical");
+    else
+        control->showPlot3dBar("gorizontal");
 }

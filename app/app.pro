@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets multimedia printsupport network
+QT       += core gui widgets multimedia printsupport network datavisualization
 
 TARGET = rip3p
 TEMPLATE = app
@@ -32,7 +32,9 @@ SOURCES += memory.cpp\
     gr/workers/prworker.cpp \
     nomain/savefile.cpp \
     nomain/controlform.cpp \
-    gr/plotosc.cpp
+    gr/plotosc.cpp \
+    gr/plot3b.cpp \
+    gr/gr3b.cpp
 
 HEADERS  += memory.h \
     gwindow.h \
@@ -57,7 +59,9 @@ HEADERS  += memory.h \
     gr/workers/prworker.h \
     nomain/savefile.h \
     nomain/controlform.h \
-    gr/plotosc.h
+    gr/plotosc.h \
+    gr/plot3b.h \
+    gr/gr3b.h
 
 FORMS    += gwindow.ui \
     gr/gr3d.ui \
@@ -70,7 +74,8 @@ FORMS    += gwindow.ui \
     gr/plotmath.ui \
     nomain/savefile.ui \
     nomain/controlform.ui \
-    gr/plotosc.ui
+    gr/plotosc.ui \
+    gr/plot3b.ui
 
 RESOURCES += \
     nomain/res.qrc

@@ -44,8 +44,6 @@ void PlotGl::setType(QString typeName){
     }
     m_Sc->setType(typeName);
     m_Sc->c_data = Memory::resultData[typeName];
-    //dataLink[typeName]->length;
-    //dataLink[typeName]->link;
     m_Sc->loadDataImage();
     m_Sc->sync();
     connect(m_Sc,&ScObject::plot,this,&PlotGl::updateSc);
@@ -154,12 +152,6 @@ static const char *fragmentShaderSource =
 QByteArray versionedShaderCode(const char *src)
 {
     QByteArray versionedSrc;
-
-    /*if (QOpenGLContext::currentContext()->isOpenGLES())
-        versionedSrc.append(QByteArrayLiteral("#version 300 es compatibility\n"));
-    else
-        versionedSrc.append(QByteArrayLiteral("#version 330 compatibility\n"));*/
-
     versionedSrc.append(src);
     return versionedSrc;
 }
@@ -248,18 +240,9 @@ void PlotGl::updateSc(){
 }
 void PlotGl::paintGL()
 {
-    /*QPainter painter;
-    painter.begin(this);
-
-    painter.beginNativePainting();*/
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
-    /*glDepthFunc(GL_LESS);
-    glEnable(GL_POINT_SMOOTH);
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_CULL_FACE);*/
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_camera.setToIdentity();
     m_camera.translate(0, 0, - m_scale);
@@ -275,7 +258,6 @@ void PlotGl::paintGL()
     m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-    //glPointSize(20.0);
     //glDrawArrays(GL_POINTS, 0, m_Sc->vertexCount());
     glDrawArrays(GL_TRIANGLES, 0, m_Sc->vertexCount());
     vaoBinder.release();
@@ -286,77 +268,7 @@ void PlotGl::paintGL()
     //vaoBinderLast.release();
     vaoBinderLast.release();
 
-    /*const QRect drawRect(0, 0, 400, 400);
-    const QSize drawRectSize = drawRect.size();
-    QOpenGLPaintDevice device(drawRectSize);
-    QPainter painter;
-    painter.begin(&device);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
-
-    painter.fillRect(drawRect, Qt::transparent);
-    painter.setPen(QPen(Qt::green, 5));
-    painter.setBrush(Qt::red);
-    painter.setPen(QPen(Qt::white, 0));
-    QFont font;
-    font.setPointSize(24);
-    painter.setFont(font);
-    painter.drawText(drawRect, "Hello FBO", QTextOption(Qt::AlignCenter));
-
-    painter.end();*/
-    /*
-
-    const QRect drawRect(0, 0, 400, 400);
-    const QSize drawRectSize = drawRect.size();
-
-    QOpenGLFramebufferObjectFormat fboFormat;
-    fboFormat.setSamples(16);
-    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-    QOpenGLFramebufferObject fbo(drawRectSize, fboFormat);
-    fbo.bind();
-
-    QOpenGLPaintDevice device(drawRectSize);
-    QPainter painter;
-    painter.begin(&device);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
-
-    painter.fillRect(drawRect, Qt::blue);
-
-    painter.drawTiledPixmap(drawRect, QPixmap(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
-
-    painter.setPen(QPen(Qt::green, 5));
-    painter.setBrush(Qt::red);
-    painter.drawEllipse(0, 100, 400, 200);
-    painter.drawEllipse(100, 0, 200, 400);
-
-    painter.beginNativePainting();
-    nativePainting();
-    painter.endNativePainting();
-
-    painter.setPen(QPen(Qt::white, 0));
-    QFont font;
-    font.setPointSize(24);
-    painter.setFont(font);
-    painter.drawText(drawRect, "Hello FBO", QTextOption(Qt::AlignCenter));
-
-    painter.end();
-
-    fbo.release();
-
-*/
-
-
-
-
     m_program->release();
-
-    /*painter.endNativePainting();
-
-
-        painter.setPen(Qt::white);
-        painter.drawText(0, 1, " paintGL calls / s");
-
-    painter.end();*/
 
 }
 void PlotGl::initData(){

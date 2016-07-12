@@ -10,6 +10,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    // Настройка openGL
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
 
 //    Memory::dLink = new Rdata();
     GWindow w;
+    // Запуск основного класса
     w.show();
 
     return a.exec();

@@ -13,6 +13,7 @@ using namespace std;
 
 Worker::Worker(QObject *parent) : QObject(parent)
 {
+    //Добавляем в ThreadPool класс обработки udp пакетов
     p_udpSocket = new QUdpSocket();
     PacketNum = 0;
     udp = new UDPSock();
@@ -42,6 +43,9 @@ Worker::~Worker(){
     /*tcpThread.quit();
     tcpThread.wait();*/
 }
+/*
+ * Обработчик сетевых пакетов
+*/
 void Worker::Process(QByteArray &data){
     unsigned char *DataPtr = (unsigned char *)data.data() + 10;
     unsigned int CurBufNum = *((unsigned int *) DataPtr);
@@ -60,11 +64,11 @@ void Worker::Process(QByteArray &data){
         return;
     unsigned int CurSubBufNum = *((unsigned int *) DataPtr);
     DataPtr += sizeof(int);
-    unsigned int BufSize = leSubBufNum*1024*sizeof(int);
+    unsigned int BufSize = leSubBufNum*BLOCKLANGTH*sizeof(int);
     unsigned int leSub = leSubBufNum*4*sizeof(int);
     unsigned int VarBufSize = BufSize*4;
     Q_UNUSED(VarBufSize);
-    memcpy(&PlotBuf[CurVarNum*BufSize+1024*CurSubBufNum], DataPtr, 1024);
+    memcpy(&PlotBuf[CurVarNum*BufSize+BLOCKLANGTH*CurSubBufNum], DataPtr, BLOCKLANGTH);
     //cout << "Process: " << (CurVarNum*BufSize+1024*CurSubBufNum) << " : " << CurSubBufNum << " : " << CurBufNum << " : " << CurVarNum << " : " << leSub << endl;
     if((CurSubBufNum+1)*(CurVarNum+1) == leSub){
         QByteArray DataBufArray;
@@ -535,15 +539,15 @@ void Worker::sendParam(){
     QByteArray bleFreq;
     bleFreq.resize(BuffSize);
     unsigned char *DataPtr = (unsigned char *)bleFreq.data();
-    memcpy(DataPtr,&leFreq,sizeof(double));
+    memcpy(DataPtr,&leFreq,sizeof(double)); //Центральная частота сигнала
     DataPtr += sizeof(double);//8
-    memcpy(DataPtr,&leAmp,sizeof(double));
+    memcpy(DataPtr,&leAmp,sizeof(double));  //Амплитуда сигнала
     DataPtr += sizeof(double);//16
-    memcpy(DataPtr,&lePeriod,sizeof(double));
+    memcpy(DataPtr,&lePeriod,sizeof(double)); //Период следования импульсов в пачке
     DataPtr += sizeof(double);//24
-    memcpy(DataPtr,&leDuration,sizeof(double));
+    memcpy(DataPtr,&leDuration,sizeof(double)); //Длительность импульса
     DataPtr += sizeof(double);//32
-    memcpy(DataPtr,&leBurstLen,sizeof(int));
+    memcpy(DataPtr,&leBurstLen,sizeof(int)); //Количество импульсов в пачке
     DataPtr += sizeof(int);//36
     memcpy(DataPtr,&leFreqRange,sizeof(double));
     DataPtr += sizeof(double);//44
